@@ -24,7 +24,9 @@ public class WetTiles {
         for (Line line: walls) {
             ArrayList<Coordinate> coords = line.flatten();
             for (Coordinate coord: coords) {
-                this.tiles[coord.x][coord.y] = -1;
+                if (within_bounds(coord)) {
+                    this.tiles[coord.x][coord.y] = -1;
+                }
             }
         }
     }
@@ -42,7 +44,7 @@ public class WetTiles {
         public Coordinate start;
         public Coordinate end;
         public Line(Coordinate start, Coordinate end) {
-            if (start.x > end.x && start.y > end.y) {
+            if (start.x >= end.x && start.y >= end.y) {
                 this.start = end;
                 this.end = start;
             } else {
@@ -64,7 +66,7 @@ public class WetTiles {
                 }
             } else if (start.x < end.x || start.y > end.y) {
                 int y = start.y;
-                for (int x = start.x; x <= end.x; x++) {
+                for (int x = start.x; x <= end.x; x += x_gradient) {
                     coords.add(new Coordinate(x, y));
                     y += y_gradient;
                 }
@@ -110,12 +112,14 @@ public class WetTiles {
     }
 
     @SuppressWarnings("unchecked")
-    public void next() {
+    public void next(int current_minute) {
         ArrayList<Coordinate> current_wet_tiles =
             (ArrayList<Coordinate>)latest_wet_tiles.clone();
         latest_wet_tiles = new ArrayList<Coordinate>();
         for (Coordinate tile: current_wet_tiles) {
-            spread(new Coordinate(tile.x, tile.y));
+            if (tiles[tile.x][tile.y] == current_minute) {
+                spread(new Coordinate(tile.x, tile.y));
+            }
             latest_wet_tiles.remove(tile);
         }
     }
@@ -129,7 +133,7 @@ public class WetTiles {
             if (latest_wet_tiles.isEmpty()) {
                 return;
             }
-            next();
+            next(min);
         }
     }
 
